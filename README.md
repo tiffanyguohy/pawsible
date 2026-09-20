@@ -45,8 +45,13 @@ recovered fields.
 That ordering is the whole design. Query time touches no language model, so search is
 fast, cheap, reproducible, and identical for every user. It is also what separates this
 from pasting listings into a chatbot: the corpus is exhaustively processed in advance,
-so a search can assert what is *not* there, and saved searches can run nightly against
-the whole metro.
+so a search can assert what is *not* there, and saved searches can run nightly across
+the whole corpus.
+
+Scope is national. Adopters filter by location and radius; the corpus itself is not
+geographically bounded. Rollout is region-seeded — the first backfill covers a bounded
+area so the accuracy numbers and the realized cost per 1k listings can be confirmed
+before widening.
 
 ## What it guarantees
 
