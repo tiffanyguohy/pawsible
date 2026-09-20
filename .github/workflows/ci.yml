@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push: {branches: [main]}
+  pull_request:
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with: {enable-cache: true}
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run black --check .
+      - run: uv run mypy
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: pawsible
+          POSTGRES_PASSWORD: pawsible
+          POSTGRES_DB: pawsible
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U pawsible -d pawsible"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://pawsible:pawsible@localhost:5432/pawsible
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with: {enable-cache: true}
+      - run: uv sync
+      # Sockets are banned by the autouse fixture in tests/conftest.py, so this never
+      # reaches Petfinder or Anthropic no matter what a test tries to do.
+      - run: uv run pytest -q
+
+  codebook-fresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with: {enable-cache: true}
+      - run: uv sync
+      - run: uv run python -m pawsible.schema.codebook --write
+      - name: Fail if the committed codebook drifted from the enums
+        run: git diff --exit-code -- evals/CODEBOOK.md

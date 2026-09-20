@@ -1,0 +1,226 @@
+# Pawsible labeling codebook
+
+This is the operational definition of every field and every value, written **before**
+any labeling starts. It is the document the golden set is labeled against, the document
+the extraction prompt is written from, and the document a disagreement is resolved by.
+
+Treat it the way an ethogram is treated: if a real listing does not fit a definition
+here, the definition is wrong and gets amended — and every listing labeled under the
+old definition gets revisited. Do not resolve an ambiguity silently in your head. That
+is how a golden set stops being ground truth.
+
+The vocabularies below the marker are generated from the docstrings in
+`pawsible/schema/enums.py` by `make codebook`. Edit them there, not here; CI fails if this
+file drifts from the code.
+
+---
+
+## The three rules that override everything else
+
+**1. Label only what the text asserts.** Not what is likely, not what the breed
+suggests, not what the photo shows. A pit mix with no mention of cats is UNKNOWN, not
+NO. A senior dog with no mention of stairs is UNKNOWN, not NO_STAIRS. Pawsible recovers
+what the shelter wrote; it does not produce new judgments about the animal.
+
+**2. UNKNOWN is the absence of a key, not a value.** Leave the field out entirely. It
+carries no evidence span because there is nothing to quote. This is different in kind
+from `NOT_TESTED`, which is a *positive statement in the text* — "has not been cat
+tested" — and therefore has a span like any other value.
+
+Getting this wrong in the direction of presenting an untested animal as safe is the
+single highest-cost failure in the product. A dog shown as cat-safe on untested
+evidence can get a cat killed. When you are unsure between `NOT_TESTED` and UNKNOWN,
+ask only: *did the shelter say they hadn't tested?* If yes, `NOT_TESTED`. If the
+listing is merely silent, UNKNOWN.
+
+**3. The span must contain the assertion, by itself.** Someone reading only the
+highlighted substring, with no surrounding text, must be able to see why the value is
+what it is. Two consequences:
+
+- A span that omits the negation is wrong. For "he has *not* been tested with cats",
+  the span is `has not been tested with cats`, never `been tested with cats`.
+- A span that omits the condition is wrong. For `CONDITIONAL`, the condition is the
+  whole point — `good with older children` is a correct span; `good with` is not.
+
+## Choosing offsets
+
+Offsets are `[start, end)` character positions into the **canonical** description text —
+the normalized string the pipeline stores, not the raw Petfinder HTML. The labeler
+serves you the canonical text and computes offsets from your selection, so in practice
+you select with the mouse and it handles the arithmetic.
+
+Two rules for the selection itself:
+
+- **Take the minimal span that satisfies rule 3.** Prefer a clause to a sentence, and a
+  sentence to a paragraph. Do not include leading or trailing whitespace.
+- **When the same phrase appears twice, select the occurrence that actually supports
+  the value.** "Does great" may appear once about cats and once about being left alone.
+  The offsets are checked at their stated position, so the wrong occurrence is a real
+  error even though the quoted text matches.
+
+## Hard cases
+
+**Negation near a compatibility term.** "Not good with cats" is `NO`. "Not been tested
+with cats" is `NOT_TESTED`. "We don't think he'd do well with cats" is `NO`. "We aren't
+sure about cats" is UNKNOWN — uncertainty is not an assertion.
+
+**Conditionals.** "Fine with older kids", "cats with a slow introduction", "dogs after
+a proper meet-and-greet", "would do best as the only pet but has lived with a calm
+dog" — all `CONDITIONAL`. Collapsing these into `YES` or `NO` is the second-worst
+failure in the product. If a condition is stated, the value is `CONDITIONAL` even when
+the overall tone is positive.
+
+**Multi-animal listings.** Bonded pairs and litters get one listing describing several
+animals. Label only what is asserted about *the animal this listing is for*. If the
+text says "Luna is cat-friendly, her brother Milo is not" and the listing is Luna's,
+`good_with_cats` is `YES` with Luna's clause as the span. If the text is not separable
+by animal, leave the field UNKNOWN.
+
+**Foster write-ups.** Foster descriptions are longer, first-person, and assert far more
+— separation tolerance, house-training, stair use. Label them the same way. The extra
+detail is a property of `placement: FOSTER`, not a licence to infer.
+
+**Statements about the past.** "Was house-trained in his previous home" is `YES` for
+`house_trained`; the shelter is asserting it. "Had been house-trained but has regressed
+in the kennel" is `PARTIAL`. A resolved medical condition goes in `medical_needs` with
+`ongoing_care: false`.
+
+**Shelter boilerplate.** Text identical across every listing from an organization
+("all our dogs are vetted and microchipped") asserts nothing about this animal. Do not
+label from it.
+
+---
+
+<!-- BEGIN GENERATED -->
+
+<!-- GENERATED by pawsible.schema.codebook -- do not edit by hand. -->
+<!-- Edit the docstrings in pawsible/schema/enums.py and run `make codebook`. -->
+
+## Field vocabularies
+
+A field is left **UNKNOWN** by omitting it. UNKNOWN is not a value and never
+carries evidence: it means the description made no assertion either way.
+`NOT_TESTED` is the opposite -- an explicit statement in the text, with a span.
+
+### `good_with_cats`
+
+*single value, drawn from `Compatibility`*
+
+| Value | Definition |
+| --- | --- |
+| `YES` | Stated to be good with them, without qualification. |
+| `NO` | Stated to be unsuitable for a home with them. |
+| `CONDITIONAL` | Suitable only under a stated condition -- "fine with older kids", "cats with a slow introduction", "dogs after a meet-and-greet". Collapsing these into YES or NO is the second-worst failure in the product, so the condition itself must be in the evidence span. |
+| `NOT_TESTED` | The shelter states the animal has not been tested or observed with them. This is a positive assertion found in the text, not an absence of information -- it is what distinguishes an untested dog from one nobody wrote about. |
+
+### `good_with_dogs`
+
+*single value, drawn from `Compatibility`*
+
+| Value | Definition |
+| --- | --- |
+| `YES` | Stated to be good with them, without qualification. |
+| `NO` | Stated to be unsuitable for a home with them. |
+| `CONDITIONAL` | Suitable only under a stated condition -- "fine with older kids", "cats with a slow introduction", "dogs after a meet-and-greet". Collapsing these into YES or NO is the second-worst failure in the product, so the condition itself must be in the evidence span. |
+| `NOT_TESTED` | The shelter states the animal has not been tested or observed with them. This is a positive assertion found in the text, not an absence of information -- it is what distinguishes an untested dog from one nobody wrote about. |
+
+### `good_with_kids`
+
+*single value, drawn from `Compatibility`*
+
+| Value | Definition |
+| --- | --- |
+| `YES` | Stated to be good with them, without qualification. |
+| `NO` | Stated to be unsuitable for a home with them. |
+| `CONDITIONAL` | Suitable only under a stated condition -- "fine with older kids", "cats with a slow introduction", "dogs after a meet-and-greet". Collapsing these into YES or NO is the second-worst failure in the product, so the condition itself must be in the evidence span. |
+| `NOT_TESTED` | The shelter states the animal has not been tested or observed with them. This is a positive assertion found in the text, not an absence of information -- it is what distinguishes an untested dog from one nobody wrote about. |
+
+### `energy_level`
+
+*single value, drawn from `EnergyLevel`*
+
+| Value | Definition |
+| --- | --- |
+| `LOW` | Described as calm, low-key, a couch companion, content with short walks. |
+| `MODERATE` | Described as enjoying daily walks and play without needing a working outlet. |
+| `HIGH` | Described as needing substantial daily exercise, a running partner, a job. |
+
+### `house_trained`
+
+*single value, drawn from `TrainingState`*
+
+| Value | Definition |
+| --- | --- |
+| `YES` | Stated to be reliably trained. |
+| `PARTIAL` | Stated to be in progress, mostly reliable, or reliable under conditions. |
+| `NO` | Stated not to be trained. |
+
+### `crate_trained`
+
+*single value, drawn from `TrainingState`*
+
+| Value | Definition |
+| --- | --- |
+| `YES` | Stated to be reliably trained. |
+| `PARTIAL` | Stated to be in progress, mostly reliable, or reliable under conditions. |
+| `NO` | Stated not to be trained. |
+
+### `placement`
+
+*single value, drawn from `Placement`*
+
+| Value | Definition |
+| --- | --- |
+| `FOSTER` | In a foster home. |
+| `SHELTER` | In a shelter, kennel, or boarding facility. |
+
+### `separation_tolerance`
+
+*single value, drawn from `SeparationTolerance`*
+
+| Value | Definition |
+| --- | --- |
+| `GOOD` | Stated to settle when left alone. |
+| `STRUGGLES` | Stated to show distress when left alone -- vocalizing, destruction, escape attempts, or an explicit separation-anxiety diagnosis. |
+
+### `home_requirements`
+
+*multi-label, drawn from `HomeRequirement`*
+
+| Value | Definition |
+| --- | --- |
+| `FENCED_YARD` | A fenced yard is stated as required. |
+| `NO_STAIRS` | Stairs are stated to be a problem, or a single-level home is required. |
+| `QUIET_HOME` | A calm or low-traffic household is stated as required. |
+| `EXPERIENCED_OWNER` | Prior experience with the species, breed, or behavior issue is stated as required. |
+| `APARTMENT_OK` | Explicitly stated to do well in an apartment or condo. |
+| `ONLY_PET` | Stated to need to be the only animal in the home. |
+| `NO_SMALL_ANIMALS` | Stated to be unsafe with small animals -- rabbits, rodents, birds, poultry. |
+
+### `medical_needs[]`, `behavioral_notes[]`
+
+Each entry is `{summary, verbatim, offsets, ongoing_care}`. `verbatim` is what
+an adopter sees; `summary` exists only to make the entry filterable and is
+never shown as the claim. Never paraphrase a medical or behavioral statement.
+
+`ongoing_care` is true when the text describes care the adopter must continue
+-- daily medication, a prescription diet, a scheduled surgery -- and false for
+a resolved or historical condition.
+
+### Fields in the schema
+
+| Field | Required span |
+| --- | --- |
+| `good_with_cats` | yes |
+| `good_with_dogs` | yes |
+| `good_with_kids` | yes |
+| `energy_level` | yes |
+| `house_trained` | yes |
+| `crate_trained` | yes |
+| `placement` | yes |
+| `separation_tolerance` | yes |
+| `home_requirements` | yes |
+| `medical_needs` | yes |
+| `behavioral_notes` | yes |
+
+<!-- END GENERATED -->
