@@ -1,0 +1,30 @@
+{
+  "id": "18234567",
+  "type": "animals",
+  "attributes": {
+    "name": "Buddy",
+    "species": "Dog",
+    "breedPrimary": "Labrador Retriever",
+    "isBreedMixed": true,
+    "sex": "Male",
+    "ageGroup": "Adult",
+    "sizeGroup": "Large",
+    "sizeCurrent": "68",
+    "url": "https://www.rescuegroups.org/animal/18234567",
+    "pictureThumbnailUrl": "https://cdn.rescuegroups.org/1/pics/18234567.jpg",
+    "descriptionHtml": "<p>Buddy does great with the resident cats&nbsp;but would prefer to be the only dog.</p><p>He has <b>not</b> been tested with small children.</p>",
+    "descriptionText": "Buddy does great with the resident cats but would prefer to be the only dog. He has not been tested with small children.",
+    "isCatsOk": true,
+    "isDogsOk": false,
+    "isKidsOk": null,
+    "isHousetrained": true,
+    "isYardRequired": true,
+    "isFarmAnimalsOk": null,
+    "isSpecialNeeds": false,
+    "isNeedingFoster": false,
+    "activityLevel": "Moderate"
+  },
+  "relationships": {
+    "orgs": {"data": [{"type": "orgs", "id": "4412"}]}
+  }
+}
