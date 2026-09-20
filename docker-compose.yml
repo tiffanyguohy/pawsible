@@ -1,0 +1,19 @@
+services:
+  db:
+    # pgvector image rather than plain postgres:16 -- retrofitting the extension onto
+    # an existing instance means a pg_dump migration, and Railway has the same trap.
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: pawsible
+      POSTGRES_PASSWORD: pawsible
+      POSTGRES_DB: pawsible
+    ports: ["5432:5432"]
+    volumes: ["pawsible_pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pawsible -d pawsible"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pawsible_pgdata:
