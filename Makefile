@@ -29,7 +29,7 @@ test-unit:  ## Unit tests only (no database)
 	$(UV) pytest tests/unit tests/arch
 
 test-db:  ## Tests requiring a live Postgres
-	$(UV) pytest -m db
+	DATABASE_URL="postgresql+psycopg://pawsible:pawsible@localhost:5433/pawsible" $(UV) pytest -m db
 
 codebook:  ## Regenerate the generated block inside evals/CODEBOOK.md
 	$(UV) python -m pawsible.schema.codebook --write

@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: pawsible
       POSTGRES_PASSWORD: pawsible
       POSTGRES_DB: pawsible
-    ports: ["5432:5432"]
+    ports: ["5433:5432"]  # 5433 on the host: 5432 is often already taken by another project
     volumes: ["pawsible_pgdata:/var/lib/postgresql/data"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pawsible -d pawsible"]

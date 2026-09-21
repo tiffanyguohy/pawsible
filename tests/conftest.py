@@ -14,7 +14,8 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _ban_network(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
-    if request.node.get_closest_marker("network"):
+    # `db` tests talk to a local Postgres, so they need sockets too.
+    if request.node.get_closest_marker("network") or request.node.get_closest_marker("db"):
         return
 
     def _blocked(*args: object, **kwargs: object) -> None:
