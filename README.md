@@ -105,9 +105,8 @@ latter.
 
 ## Data sources
 
-RescueGroups.org, plus per-shelter PetPoint/Petango feeds where an organization is
-willing to share one. Sources sit behind a single adapter interface; nothing above that
-boundary knows where a listing came from.
+RescueGroups.org. Sources sit behind a single adapter interface, so nothing above that
+boundary knows where a listing came from and a second source stays cheap to add.
 
 That boundary earned itself early. The Petfinder API — the original source — was retired
 on 2025-12-02 and its hostname no longer resolves. Replacing it touched one adapter and
